@@ -2,6 +2,7 @@ import React, { useReducer } from 'react';
 import { Button, View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import AttributeComponent from '../components/AttributeComponent';
 
+//TODO: Stylize app better, replace the assets used with better ones
 
 const initialState = {
     gameState: 'characterCreation',
@@ -20,21 +21,35 @@ const initialState = {
     combatLog: 'A dangerous foe draws near!',
 };
 
-
 const reducer = (state, action) => {
     //destructuring state
     const { player, monster } = state;
 
     const physicalDamage = player.strength * 4;
     const magicDamage = player.magic * 2;
+    //deathCheck is run after every player action to see if either the player or the monster have died
+    const deathCheck = (newState) => {
+        let tempState = {...newState};
 
-    switch (action.type) {       
+        if(tempState.player.health <= 0){
+            tempState.combatLog = "You have been defeated";
+        }
+
+        if(tempState.monster.health <= 0){
+            tempState.monster.health = 0;
+            tempState.monster.image = require('../../assets/monsterDead.png');
+            tempState.combatLog = "You have killed the monster";
+        }
+
+        return tempState;
+    }
+
+    switch (action.type) {             
         case 'INCREASE_ATTRIBUTE':
             if (player.pointsRemaining > 0) {
                 return {
                     ...state,
-                    player: {
-                        //copying the state of player
+                    player: {                        
                         ...player,
                         //dynamically setting the prop name using [ ] around action.attribute
                         [action.attribute]: player[action.attribute] + 1,
@@ -60,8 +75,8 @@ const reducer = (state, action) => {
                 ...state,
                 gameState: 'combat',
             };        
-        case 'MELEE':            
-            return {
+        case 'MELEE':  
+            tempState = {
                 ...state,
                 monster: {
                     ...monster,
@@ -72,15 +87,16 @@ const reducer = (state, action) => {
                     health: player.health - monster.strength,
                 },
                 combatLog: `You dealt ${physicalDamage} physical damage to the monster, and the monster dealt ${monster.strength} physical damage to you!`,
-            };
+            }          
+            return deathCheck(tempState) ;
         case "HEAL":
-            if(player.magic - 4 <= 0){
+            if(player.magic - 4 < 0){
                 return{
                     ...state,
                     combatLog: 'You do not have enough magic to cast that!',
                 }
-            };            
-            return {
+            };    
+            tempState = {
                 ...state,
                 player: {
                     ...player,
@@ -88,15 +104,16 @@ const reducer = (state, action) => {
                     magic: player.magic - 4,
                 },
                 combatLog: `You healed yourself for ${(player.magic * 2)} health points!`,
-            };
-        case "MAGIC_MISSLE":
-            if(player.magic - 2 <= 0){
+            }               
+            return deathCheck(tempState);                
+        case "MAGIC_MISSLE":            
+            if(player.magic - 2 < 0){
                 return{
                     ...state,
                     combatLog: 'You do not have enough magic to cast that!',
                 }
             }; 
-            return {
+            tempState = {
                 ...state,                    
                 monster: {
                     ...monster,
@@ -108,7 +125,8 @@ const reducer = (state, action) => {
                     magic: player.magic - 2,
                 },
                 combatLog: `You dealt ${magicDamage} magic damage to the monster, and the monster dealt ${monster.strength} physical damage to you!`,
-            };
+            }; 
+            return deathCheck(tempState);                                          
         default:
             return state;
     }
@@ -117,8 +135,8 @@ const reducer = (state, action) => {
 const GameScreen = () => {
     const [state, dispatch] = useReducer(reducer, initialState);
     const {gameState, player, monster, combatLog} = state;
-    // Character Creation Screen
     
+    // Character Creation Screen
     if (gameState === 'characterCreation') {
       return (
         <View style = {styles.container}>
@@ -155,15 +173,11 @@ const GameScreen = () => {
         </View>
       );
     } 
+
     // Combat Screen
     else if (gameState === 'combat') {
       return (
-        //if either the monster is dead or the player is dead, display the appropriate death screen, otherwise keep showing the combat screen
-        //TODO: rework this so that it displays on the same page as the combat screen
-        <View style = {styles.container}>
-            {player.health <= 0 || monster.health <= 0 ? 
-            (player.health <= 0 ? <Text>You have been killed </Text>: <Text>The monster has been killed</Text>)
-            : 
+        <View style = {styles.container}>            
             <View>
                 <Text>{`Monster Health: ${monster.health}`}</Text>
                 <Text>{`Player Health: ${player.health}`}</Text>
@@ -171,6 +185,7 @@ const GameScreen = () => {
                 <Image source = {monster.image}/>
                 <Text>{combatLog}</Text>
                 <View style = {styles.icons}>
+
                     <TouchableOpacity onPress={() => dispatch({ type: 'MELEE' })}>
                         <Image 
                         source = {require('../../assets/attackIcon.png')}                        
@@ -188,9 +203,9 @@ const GameScreen = () => {
                         source = {require('../../assets/healIcon.png')}                        
                         />
                     </TouchableOpacity>
+
                 </View>               
-            </View>
-            }          
+            </View>                      
         </View>
       );
     }
