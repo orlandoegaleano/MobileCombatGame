@@ -1,25 +1,16 @@
 import { createAppContainer } from "react-navigation";
 import { createStackNavigator } from "react-navigation-stack";
-import HomeScreen from "./src/screens/HomeScreen";
-import ListScreen from "./src/screens/ListScreen";
-import ComponentsScreen from "./src/screens/ComponentsScreen";
-import ImageScreen from "./src/screens/ImageScreen";
-import CounterScreen from "./src/screens/CounterScreen";
-import ColorScreen from "./src/screens/ColorScreen";
-import ColorAdjusterScreen from "./src/screens/ColorAdjusterScreen";
+import WelcomeScreen from "./src/screens/WelcomeScreen";
+import GameScreen from "./src/screens/GameScreen";
+
 
 const navigator = createStackNavigator(
   {
-    Home: HomeScreen,
-    List: ListScreen,
-    Components: ComponentsScreen,
-    Image: ImageScreen,
-    Counter: CounterScreen,
-    Color: ColorScreen,
-    ColorAdjuster: ColorAdjusterScreen,
+    Welcome: WelcomeScreen,
+    Game: GameScreen,
   },
   {
-    initialRouteName: "Home",
+    initialRouteName: "Welcome",
     defaultNavigationOptions: {
       title: "App",
     },
