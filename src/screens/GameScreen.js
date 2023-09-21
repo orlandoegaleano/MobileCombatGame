@@ -2,7 +2,40 @@ import React, { useReducer } from 'react';
 import { Button, View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import AttributeComponent from '../components/AttributeComponent';
 
-//TODO: Stylize app better, replace the assets used with better ones
+//TODO: Stylize app better, replace the assets used with better ones, create a pool of monsters to choose from
+
+
+const monsterPool = [
+    {
+        name: 'Alien Wizard',
+        health: 100,
+        strength: 5,
+        image: require('../../assets/alienWizard.png')
+    },
+    {
+        name: 'Dire Wolf',
+        health: 100,
+        strength: 5,
+        image: require('../../assets/direWolf.png'),
+    },
+    {
+        name: 'Blue Dragon' ,
+        health: 100 ,
+        strength: 5 ,
+        image: require('../../assets/blueDragon.png'),
+    },
+    {
+        name: 'Gengar' ,
+        health: 100 ,
+        strength: 5 ,
+        image: require('../../assets/gengar.png'),
+    },
+
+];
+//LEFTOFF HERE TO PICKUP ALEX
+const getRandomMonster = {
+    const random = Math.floor(Math.random() * );
+};
 
 const initialState = {
     gameState: 'characterCreation',
