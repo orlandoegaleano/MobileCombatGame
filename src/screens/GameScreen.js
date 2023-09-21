@@ -2,56 +2,57 @@ import React, { useReducer } from 'react';
 import { Button, View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import AttributeComponent from '../components/AttributeComponent';
 
-//TODO: Stylize app better, replace the assets used with better ones, create a pool of monsters to choose from
+//TODO: Stylize app better, replace the default assets with other ones
 
 
 const monsterPool = [
     {
         name: 'Alien Wizard',
-        health: 100,
-        strength: 5,
-        image: require('../../assets/alienWizard.png')
+        health: 150,
+        strength: 8,
+        image: require('../../assets/alienWizard.png'),
+        deathImage: require('../../assets/alienDead.png'),
     },
     {
         name: 'Dire Wolf',
-        health: 100,
-        strength: 5,
+        health: 75,
+        strength: 20,
         image: require('../../assets/direWolf.png'),
+        deathImage: require('../../assets/direWolfDead.png'),
     },
     {
         name: 'Blue Dragon' ,
-        health: 100 ,
-        strength: 5 ,
+        health: 250 ,
+        strength: 15 ,
         image: require('../../assets/blueDragon.png'),
+        deathImage: require('../../assets/blueDragonDead.png'),
     },
     {
         name: 'Gengar' ,
-        health: 100 ,
-        strength: 5 ,
+        health: 125 ,
+        strength: 10 ,
         image: require('../../assets/gengar.png'),
+        deathImage: require('../../assets/gengarDead.png'),
     },
 
 ];
-//LEFTOFF HERE TO PICKUP ALEX
-const getRandomMonster = {
-    const random = Math.floor(Math.random() * );
+
+const getRandomMonster = () => {
+    const randomIndex = Math.floor(Math.random() * monsterPool.length);
+    return monsterPool[randomIndex];
 };
 
 const initialState = {
     gameState: 'characterCreation',
     player: {
-        strength: 5,
-        health: 10,
-        magic: 5,
+        strength: 10,
+        health: 100,
+        magic: 10,
         pointsRemaining: 15,
     },
-    monster: {
-        name: 'Alien Wizard',
-        health: 100,
-        strength: 5,
-        image: require('../../assets/alienWizard.png'),
-    },
+    monster: getRandomMonster(),
     combatLog: 'A dangerous foe draws near!',
+    continueButton: false,
 };
 
 const reducer = (state, action) => {
@@ -65,13 +66,16 @@ const reducer = (state, action) => {
         let tempState = {...newState};
 
         if(tempState.player.health <= 0){
-            tempState.combatLog = "You have been defeated";
+            tempState.player.health = 0;
+            tempState.combatLog = "You have been defeated! Restart to play again.";
         }
 
         if(tempState.monster.health <= 0){
             tempState.monster.health = 0;
-            tempState.monster.image = require('../../assets/monsterDead.png');
-            tempState.combatLog = "You have killed the monster";
+            tempState.monster.image = tempState.monster.deathImage;
+            tempState.combatLog = `You have killed the ${tempState.monster.name}!`;
+            tempState.continueButton = true;
+            tempState.player.magic = tempState.player.magic + 6;
         }
 
         return tempState;
@@ -159,7 +163,14 @@ const reducer = (state, action) => {
                 },
                 combatLog: `You dealt ${magicDamage} magic damage to the monster, and the monster dealt ${monster.strength} physical damage to you!`,
             }; 
-            return deathCheck(tempState);                                          
+            return deathCheck(tempState);
+        case "CONTINUE_COMBAT":
+            return {
+                ...state,
+                monster: getRandomMonster(),
+                combatLog: ' ',
+                continueButton: false,
+            }                                          
         default:
             return state;
     }
@@ -169,7 +180,7 @@ const GameScreen = () => {
     const [state, dispatch] = useReducer(reducer, initialState);
     const {gameState, player, monster, combatLog} = state;
     
-    // Character Creation Screen
+    //Character Creation Screen
     if (gameState === 'characterCreation') {
       return (
         <View style = {styles.container}>
@@ -207,38 +218,64 @@ const GameScreen = () => {
       );
     } 
 
-    // Combat Screen
+    //Combat Screen
     else if (gameState === 'combat') {
       return (
-        <View style = {styles.container}>            
-            <View>
-                <Text>{`Monster Health: ${monster.health}`}</Text>
-                <Text>{`Player Health: ${player.health}`}</Text>
-                <Text>{`Player Magic: ${player.magic}`}</Text>
-                <Image source = {monster.image}/>
+        <View style = {styles.container}> 
+            <View flexDirection='row'>
+                <View style={styles.stats}>
+                <Text style={styles.names}>{`${monster.name}'s Stats`}</Text>
+                <Text>{`Health: ${monster.health}`}</Text>
+                <Text>{`Strength: ${monster.strength}`}</Text>
+                </View>
+
+                <View style={styles.stats}>
+                <Text style={styles.names}>{"Player's Stats"}</Text>
+                <Text>{`Health: ${player.health}`}</Text>
+                <Text>{`Magic: ${player.magic}`}</Text>
+                <Text>{`Strength: ${player.strength}`}</Text>
+                </View>
+            </View>
+
+            <View style={styles.portraitContainer}>
+                <Image source = {monster.image} style={styles.portraits}/>
+            </View>
+            
+            
+            
+            <View style={styles.logBox}>
                 <Text>{combatLog}</Text>
-                <View style = {styles.icons}>
+            </View>                   
+            {/*If the continue combat button is on the screen, remove the player actions */}
+            {state.continueButton ? null :
+            <View style = {styles.iconContainer}>
 
-                    <TouchableOpacity onPress={() => dispatch({ type: 'MELEE' })}>
-                        <Image 
-                        source = {require('../../assets/attackIcon.png')}                        
-                        />
-                    </TouchableOpacity>
+                <TouchableOpacity onPress={() => dispatch({ type: 'MELEE' })}>
+                    <Image 
+                    source = {require('../../assets/attackIcon.png')}                        
+                    />
+                </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => dispatch({ type: 'MAGIC_MISSLE' })}>
-                        <Image 
-                        source = {require('../../assets/fireIcon.png')}                         
-                        />
-                    </TouchableOpacity>
+                <TouchableOpacity onPress={() => dispatch({ type: 'MAGIC_MISSLE' })}>
+                    <Image 
+                    source = {require('../../assets/fireIcon.png')}                         
+                    />
+                </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => dispatch({ type: 'HEAL' })}>
-                        <Image 
-                        source = {require('../../assets/healIcon.png')}                        
-                        />
-                    </TouchableOpacity>
+                <TouchableOpacity onPress={() => dispatch({ type: 'HEAL' })}>
+                    <Image 
+                    source = {require('../../assets/healIcon.png')}                        
+                    />
+                </TouchableOpacity>                   
 
-                </View>               
-            </View>                      
+            </View>}
+            <View style={{margin:10}}>
+                {state.continueButton ? 
+                    <Button title="Continue Combat" onPress={() => dispatch({ type: 'CONTINUE_COMBAT'})}/> : null} 
+            </View>
+
+                          
+                                  
         </View>
       );
     }
@@ -251,11 +288,49 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    icons:{
-        flexDirection: 'row',
+    portraitContainer:{
+        flex: 1,       
         alignItems: 'center',
+        justifyContent: 'center',
+        width: 300,
+        height: 300,
+    },
+    iconContainer:{
+        flexDirection: 'row',        
         justifyContent: 'space-between',
         margin: 20,
+        width: '80%',
+    },
+    portraits:{
+        height: 300,
+        width: 300,       
+    },
+    logBox: {
+        width: 300,
+        height: 100,
+        borderWidth: 3,
+        borderColor: 'rgb(0,0,0)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        margin: 5,
+        borderRadius: 15,
+    },
+    stats:{
+        width: 175,
+        height: 100,
+        borderWidth: 3,
+        borderColor: 'rgb(0,0,0)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 20,
+        marginHorizontal: 10,
+        borderRadius: 15,        
+    },
+    names:{
+        textAlign: 'center',
+        fontSize: 14,
+        fontWeight: 'bold',
+        margin: 5,
     },
 });
 
