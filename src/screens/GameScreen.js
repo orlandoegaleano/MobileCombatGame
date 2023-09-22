@@ -1,5 +1,5 @@
 import React, { useReducer } from 'react';
-import { Button, View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { ImageBackground, Button, View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import AttributeComponent from '../components/AttributeComponent';
 
 //TODO: Stylize app better, replace the default assets with other ones
@@ -53,6 +53,7 @@ const initialState = {
     monster: getRandomMonster(),
     combatLog: 'A dangerous foe draws near!',
     continueButton: false,
+    restartButton: false,
 };
 
 const reducer = (state, action) => {
@@ -68,6 +69,7 @@ const reducer = (state, action) => {
         if(tempState.player.health <= 0){
             tempState.player.health = 0;
             tempState.combatLog = "You have been defeated! Restart to play again.";
+            tempState.restartButton = true;
         }
 
         if(tempState.monster.health <= 0){
@@ -83,7 +85,7 @@ const reducer = (state, action) => {
 
     switch (action.type) {             
         case 'INCREASE_ATTRIBUTE':
-            if (player.pointsRemaining > 0) {
+            if (player.pointsRemaining > 0) {                
                 return {
                     ...state,
                     player: {                        
@@ -123,7 +125,7 @@ const reducer = (state, action) => {
                     ...player,
                     health: player.health - monster.strength,
                 },
-                combatLog: `You dealt ${physicalDamage} physical damage to the monster, and the monster dealt ${monster.strength} physical damage to you!`,
+                combatLog: `You dealt ${physicalDamage} physical damage to the ${monster.name}, and the ${monster.name} dealt ${monster.strength} physical damage to you!`,
             }          
             return deathCheck(tempState) ;
         case "HEAL":
@@ -161,15 +163,19 @@ const reducer = (state, action) => {
                     health: player.health - monster.strength,
                     magic: player.magic - 2,
                 },
-                combatLog: `You dealt ${magicDamage} magic damage to the monster, and the monster dealt ${monster.strength} physical damage to you!`,
+                combatLog: `You dealt ${magicDamage} magic damage to the ${monster.name}, and the ${monster.name} dealt ${monster.strength} physical damage to you!`,
             }; 
             return deathCheck(tempState);
         case "CONTINUE_COMBAT":
             return {
                 ...state,
                 monster: getRandomMonster(),
-                combatLog: ' ',
+                combatLog: initialState.combatLog,
                 continueButton: false,
+            }
+        case "RESTART":
+            return {
+                ...state = initialState
             }                                          
         default:
             return state;
@@ -183,100 +189,108 @@ const GameScreen = () => {
     //Character Creation Screen
     if (gameState === 'characterCreation') {
       return (
-        <View style = {styles.container}>
-          <Text>Assign your skill points:</Text>
-          
-          <AttributeComponent
-            attribute="strength"
-            value={player.strength}
-            onIncrease={() => dispatch({ type: 'INCREASE_ATTRIBUTE', attribute: 'strength' })}
-            onDecrease={() => dispatch({ type: 'DECREASE_ATTRIBUTE', attribute: 'strength' })}
-          />
-         
-          <AttributeComponent
-            attribute="health"
-            value={player.health}
-            onIncrease={() => dispatch({ type: 'INCREASE_ATTRIBUTE', attribute: 'health' })}
-            onDecrease={() => dispatch({ type: 'DECREASE_ATTRIBUTE', attribute: 'health' })}
-          />
-        
-          <AttributeComponent
-            attribute="magic"
-            value={player.magic}
-            onIncrease={() => dispatch({ type: 'INCREASE_ATTRIBUTE', attribute: 'magic' })}
-            onDecrease={() => dispatch({ type: 'DECREASE_ATTRIBUTE', attribute: 'magic' })}
-          />
+        <ImageBackground source = {require('../../assets/armory.png')} style = {styles.container}>
+            <View style = {styles.container}>
+            <Text style={styles.characterCreationText}>Assign your skill points:</Text>
+            
+            <AttributeComponent
+                attribute="strength"
+                value={player.strength}
+                onIncrease={() => dispatch({ type: 'INCREASE_ATTRIBUTE', attribute: 'strength' })}
+                onDecrease={() => dispatch({ type: 'DECREASE_ATTRIBUTE', attribute: 'strength' })}
+            />
+            
+            <AttributeComponent
+                attribute="health"
+                value={player.health}
+                onIncrease={() => dispatch({ type: 'INCREASE_ATTRIBUTE', attribute: 'health' })}
+                onDecrease={() => dispatch({ type: 'DECREASE_ATTRIBUTE', attribute: 'health' })}
+            />
+            
+            <AttributeComponent
+                attribute="magic"
+                value={player.magic}
+                onIncrease={() => dispatch({ type: 'INCREASE_ATTRIBUTE', attribute: 'magic' })}
+                onDecrease={() => dispatch({ type: 'DECREASE_ATTRIBUTE', attribute: 'magic' })}
+            />
 
-          <Text>{`Points Remaining: ${player.pointsRemaining}`}</Text>
+            <Text style={styles.characterCreationText}>{`Points Remaining: ${player.pointsRemaining}`}</Text>
 
-          {/*if the player has used all of their points, allow them to continue to combat */}
-          {player.pointsRemaining === 0 ? 
-            <Button title="Start Combat" onPress={() => dispatch({ type: 'START_COMBAT' })} />
-            : null
-          }
-        </View>
+            {/*if the player has used all of their points, allow them to continue to combat */}
+            {player.pointsRemaining === 0 ? 
+                <Button title="Start Combat" onPress={() => dispatch({ type: 'START_COMBAT' })} />
+                : null
+            }
+            </View>
+        </ImageBackground>
       );
     } 
 
     //Combat Screen
     else if (gameState === 'combat') {
       return (
-        <View style = {styles.container}> 
-            <View flexDirection='row'>
-                <View style={styles.stats}>
-                <Text style={styles.names}>{`${monster.name}'s Stats`}</Text>
-                <Text>{`Health: ${monster.health}`}</Text>
-                <Text>{`Strength: ${monster.strength}`}</Text>
+        <ImageBackground source={require('../../assets/forest.gif')} style={styles.container}>
+            <View style = {styles.container}> 
+                <View flexDirection='row'>
+                    <View style={styles.stats}>
+                    <Text style={styles.names}>{`${monster.name}'s Stats`}</Text>
+                    <Text>{`Health: ${monster.health}`}</Text>
+                    <Text>{`Strength: ${monster.strength}`}</Text>
+                    </View>
+
+                    <View style={styles.stats}>
+                    <Text style={styles.names}>{"Player's Stats"}</Text>
+                    <Text>{`Health: ${player.health}`}</Text>
+                    <Text>{`Magic: ${player.magic}`}</Text>
+                    <Text>{`Strength: ${player.strength}`}</Text>
+                    </View>
                 </View>
 
-                <View style={styles.stats}>
-                <Text style={styles.names}>{"Player's Stats"}</Text>
-                <Text>{`Health: ${player.health}`}</Text>
-                <Text>{`Magic: ${player.magic}`}</Text>
-                <Text>{`Strength: ${player.strength}`}</Text>
+                <View style={styles.portraitContainer}>
+                    <Image source = {monster.image} style={styles.portraits}/>
                 </View>
+                
+                
+                
+                <View style={styles.logBox}>
+                    <Text style={{fontWeight: 'bold'}}>{combatLog}</Text>
+                </View>                   
+                {/*If the continue combat button is on the screen, remove the player actions */}
+                {state.continueButton ? null :
+                <View style = {styles.iconContainer}>
+
+                    <TouchableOpacity onPress={() => dispatch({ type: 'MELEE' })}>
+                        <Image style = {styles.icons}
+                        source = {require('../../assets/melee.png')}                        
+                        />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => dispatch({ type: 'MAGIC_MISSLE' })}>
+                        <Image style = {styles.icons}
+                        source = {require('../../assets/magicMissle.png')}                         
+                        />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => dispatch({ type: 'HEAL' })}>
+                        <Image style = {styles.icons}
+                        source = {require('../../assets/heal.png')}                        
+                        />
+                    </TouchableOpacity>                   
+
+                </View>}
+
+                <View style={{margin:10}}>
+                    {state.continueButton ? 
+                        <Button title="Continue Combat" onPress={() => dispatch({ type: 'CONTINUE_COMBAT'})}/> : null} 
+                </View>
+
+                <View style={{margin:10}}>
+                    {state.restartButton ? 
+                        <Button title="Restart" onPress={() => dispatch({ type: 'RESTART'})}/> : null} 
+                </View>                         
+                                    
             </View>
-
-            <View style={styles.portraitContainer}>
-                <Image source = {monster.image} style={styles.portraits}/>
-            </View>
-            
-            
-            
-            <View style={styles.logBox}>
-                <Text>{combatLog}</Text>
-            </View>                   
-            {/*If the continue combat button is on the screen, remove the player actions */}
-            {state.continueButton ? null :
-            <View style = {styles.iconContainer}>
-
-                <TouchableOpacity onPress={() => dispatch({ type: 'MELEE' })}>
-                    <Image 
-                    source = {require('../../assets/attackIcon.png')}                        
-                    />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => dispatch({ type: 'MAGIC_MISSLE' })}>
-                    <Image 
-                    source = {require('../../assets/fireIcon.png')}                         
-                    />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => dispatch({ type: 'HEAL' })}>
-                    <Image 
-                    source = {require('../../assets/healIcon.png')}                        
-                    />
-                </TouchableOpacity>                   
-
-            </View>}
-            <View style={{margin:10}}>
-                {state.continueButton ? 
-                    <Button title="Continue Combat" onPress={() => dispatch({ type: 'CONTINUE_COMBAT'})}/> : null} 
-            </View>
-
-                          
-                                  
-        </View>
+        </ImageBackground>
       );
     }
   };
@@ -287,6 +301,17 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        width: '100%',
+        height: '100%',
+    },
+    characterCreationContainer:{
+        flex: 1,
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: '100%',
+        
     },
     portraitContainer:{
         flex: 1,       
@@ -294,6 +319,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         width: 300,
         height: 300,
+        backgroundColor: 'rgba(0,0,0,0)',
     },
     iconContainer:{
         flexDirection: 'row',        
@@ -301,9 +327,14 @@ const styles = StyleSheet.create({
         margin: 20,
         width: '80%',
     },
+    icons: {
+        height: 100,
+        width: 100,
+    },
     portraits:{
         height: 300,
-        width: 300,       
+        width: 300, 
+        backgroundColor: 'rgba(0,0,0,0)',      
     },
     logBox: {
         width: 300,
@@ -314,6 +345,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         margin: 5,
         borderRadius: 15,
+        backgroundColor: 'rgba(255,255,255,.7)',
     },
     stats:{
         width: 175,
@@ -324,13 +356,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 20,
         marginHorizontal: 10,
-        borderRadius: 15,        
+        borderRadius: 15,
+        backgroundColor: 'rgba(255,255,255,.7)',        
     },
     names:{
         textAlign: 'center',
         fontSize: 14,
         fontWeight: 'bold',
         margin: 5,
+    },
+    characterCreationText:{
+        backgroundColor: 'rgba(255,255,255,.8)',
+        fontWeight: 'bold',
+        fontSize: 20,
     },
 });
 

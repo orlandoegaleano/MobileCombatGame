@@ -9,7 +9,7 @@ const AttributeComponent = (props) => (
           />
       </TouchableOpacity>
 
-      <Text>{`Current ${props.attribute}: ${props.value}`}</Text>      
+      <Text style = {styles.text}>{`Current ${props.attribute}: ${props.value}`}</Text>      
       
       <TouchableOpacity onPress={props.onIncrease}>
         <Image style = {styles.image} source = {require('../../assets/plusSign.png')}
@@ -23,7 +23,12 @@ const AttributeComponent = (props) => (
     container: {
       flexDirection: 'row',
       alignItems: 'center',
-      
+      margin: 10,      
+    },
+    text:{
+      backgroundColor: 'rgba(255,255,255,.8)',
+      fontWeight: 'bold',
+      fontSize: 20,      
     },
     image: {
       width: 100,
