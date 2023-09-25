@@ -7,10 +7,9 @@ I added environment backgrounds for each screen and changed out the default icon
 
 
 
-Bugs:
-1) Sometimes I have to press 'r' to reload the app because the expo client gets stuck on loading on initial startup.
-2) If you kill the monster in one fell swoop, the damage the monster does to you does not show up in the combat log because it is updated to be a "You have killed X" string.
-3) If you kill the monster but the monster also dealt a killing blow to the player, both the restart and continue buttons come on screen and the combat log says you defeated the monster instead saying you have been defeated.
+Known Bugs:
+1) If you kill the monster in one fell swoop, the damage the monster does to you does not show up in the combat log because it is updated to be a "You have killed X" string.
+2) If you kill the monster but the monster also dealt a killing blow to the player, both the restart and continue buttons come on screen and the combat log says you defeated the monster instead saying you have been defeated.
 
 
 
